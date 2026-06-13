@@ -1,0 +1,45 @@
+name: Build Godot 4 3DS
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "11.0"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          brew update
+          brew install scons pkg-config
+
+      - name: Show Versions
+        run: |
+          python3 --version
+          scons --version
+          clang --version
+
+      - name: Build
+        run: |
+          scons platform=macos target=editor arch=x86_64
+
+      - name: Upload Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-4-3ds-macos11-intel
+          path: bin/**
